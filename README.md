@@ -14,7 +14,8 @@ add membrane mechanisms to NEURON
 ion channels werden als Dichte eingefügt
 
 ### glossary
-Ra: Längswiederstand (Ohm * cm)  
+`IClamp`: pulse current clamp point process  
+`Ra`: Längswiederstand (Ohm * cm)  
 compartments = segments  
 1 section setzt sich aus 1 bis n segments ('nseg' in NEURON genannt) zusammen  
 --> "Sections are divided into segments of equal length for numerical simulation purposes"

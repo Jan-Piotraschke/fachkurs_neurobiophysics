@@ -13,7 +13,7 @@ soma {
     diam = 18.8
     L = 18.8
     Ra = 100.0
-    // insert Hodgkin-Huxley channels
+    // insert Hodgkin-Huxley channels: sodium, potassium, and leakage channels
     insert hh
     gnabar_hh = 0.25
     // insert passive channels
@@ -44,11 +44,11 @@ connect dend[1](0), soma(1)
 
 // define a variable 
 objref electrode
-// 0.5 will place a point process i.e. electrode half way between the 0 and 1 end of the "soma" segment
-// When we need to refer to specific points along the section we us the section name followed by a number between 0 
-// and 1 in parenthesis which represents the distance along the section from the origin. For example, dend[0](0) 
-// refers to a point at the proximal end of dendrite 0, dend[0](1) refers to a point at the distal end of dendrite 0, 
-// and dend[0](0.2) refers to a point 20% down dendrite 0:
+/* 0.5 will place a point process i.e. electrode half way between the 0 and 1 end of the "soma" segment
+When we need to refer to specific points along the section we us the section name followed by a number between 0 
+and 1 in parenthesis which represents the distance along the section from the origin. For example, dend[0](0) 
+refers to a point at the proximal end of dendrite 0, dend[0](1) refers to a point at the distal end of dendrite 0, 
+and dend[0](0.2) refers to a point 20% down dendrite 0: */
 soma electrode = new IClamp(0.5)
 
 // NOTE: Additional point processes can be built into the simulator with the model description language '.mod'
