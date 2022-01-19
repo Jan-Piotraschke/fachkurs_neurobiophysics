@@ -1,0 +1,16 @@
+load_file("nrngui.hoc")
+
+create soma
+soma {
+    nseg = 1
+    insert hh
+}
+
+objref syn, stim, nc
+// call the 'function' definded inside the .mod file
+soma syn = new MySynapse(0.5)
+syn.e = 5
+
+// stimulus
+stim = new NetStim()
+stim.start = 

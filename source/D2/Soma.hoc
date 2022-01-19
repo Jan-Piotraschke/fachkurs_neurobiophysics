@@ -1,0 +1,25 @@
+// create a section call "soma"
+create soma
+// activate the section "soma"
+access soma
+
+// set the properties
+soma {
+    nseg = 1
+    diam = 18.8
+    L = 18.8
+    Ra = 100.0
+}
+
+soma insert hh
+soma insert pas
+
+objref electrode
+electrode = new IClamp(0.5)
+electrode.del = 100
+electrode.dur = 100
+electrode.amp = 0.45
+
+tstop = 300
+
+print soma.v
