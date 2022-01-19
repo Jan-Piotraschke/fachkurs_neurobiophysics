@@ -1,9 +1,12 @@
+load_file("nrngui.hoc")
+
 // create a section call "soma"
 create soma
 // access the section "soma"
 access soma
 
 // set the properties
+// only for the sections you can also use the {} notation
 soma {
     nseg = 1
     diam = 18.8
@@ -25,6 +28,7 @@ electrode = new IClamp(0.5)
 // NOTE: Additional point processes can be built into the simulator with the model description language '.mod'
 
 // set the properties of the electrode which gets inserted into the soma
+// you HAVE to use the dot notation
 electrode.del = 100
 electrode.dur = 100
 electrode.amp = 0.45
