@@ -21,23 +21,23 @@ ASSIGNED {
 	i (nA)
 	g (uS)
 }
-
+: ODE variables
 STATE {
 	A (uS)
 	B (uS)
 }
-
+: initial conditions
 INITIAL {
 	A = 0
 	B = 0
 }
-
+: our model system
 BREAKPOINT {
 	SOLVE state METHOD cnexp
 	g = B - A
 	i = g * (v - e)
 }
-
+: ODEs
 DERIVATIVE state {
 	A' = -A / tau_A
 	B' = -B / tau_B
