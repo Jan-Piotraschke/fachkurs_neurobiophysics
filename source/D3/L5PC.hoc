@@ -26,39 +26,37 @@ soma {
 // first dendrite
 // To increase the spatial resolution of the dendrite, we can simply increase the number of compartments
 // NOTE: erinnere dich an das Kabel Model (verzweigte Kabelgleichung). nseq entspricht die Feinkörnigkeit
-
 dend[0] {
     nseg = 5
     diam = 3.18
     L = 701.9
     Ra = 100
+    insert pas
+    g_pas = .00005 
+    e_pas = -65.0
 }
 dend[1] {
     nseg = 5 
     diam = 2.0 
     L = 549.1 
     Ra = 100 
-}
-
-// insert the passive channels
-for (i = 0; i<=dend_number-1; i=i+1) dend[i] { 
-    insert pas 
+    insert pas
     g_pas = .00005 
-    e_pas = -65.0 
-} 
+    e_pas = -65.0
+}
 
 // Connect things together
 connect dend[0](0), soma(0)
 connect dend[1](0), soma(1)
 
-// define a variable
-objref stim
+// define a variable 
+objref electrode
 /* 0.5 will place a point process i.e. electrode half way between the 0 and 1 end of the "soma" segment
 When we need to refer to specific points along the section we us the section name followed by a number between 0 
 and 1 in parenthesis which represents the distance along the section from the origin. For example, dend[0](0) 
 refers to a point at the proximal end of dendrite 0, dend[0](1) refers to a point at the distal end of dendrite 0, 
 and dend[0](0.2) refers to a point 20% down dendrite 0: */
-soma stim = new IClamp(0.5)
+soma electrode = new IClamp(0.5)
 
 // NOTE: Additional point processes can be built into the simulator with the model description language '.mod'
 
@@ -66,9 +64,9 @@ soma stim = new IClamp(0.5)
 // you HAVE to use the dot notation
 // delay "del" because v_init will be close the resting potential but not equal
 // --> thats why there will be a set back to the "correct" value in the first ms of the simulation
-soma stim.del = 100
-soma stim.dur = 100
-soma stim.amp = 0.5
+soma electrode.del = 100
+soma electrode.dur = 100
+soma electrode.amp = 0.5
 
 // run the simulation for 300ms
 tstop = 300
@@ -76,14 +74,3 @@ tstop = 300
 print "V = ", soma.v, "mV"
 
 // forall psection()
-
-// write a program that prints the distances (in μm) of all 10 compartments ("nseg") of the dendrites
-// from the soma in the last model you used.
-soma distance() 
-for x=0, 1 {
-    nseg_length = 1 / dend[x].nseg
-    for (y = 0; y<=1; y=y+nseg_length) dend[x] {
-        // print secname()
-        print distance(y), "um"
-    }
-}

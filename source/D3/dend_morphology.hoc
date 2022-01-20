@@ -1,0 +1,20 @@
+load_file("Morphology_L5PC.hoc")
+
+// Loops over all sections, successively making each section the currently accessed section.
+forall {
+    insert hh 
+    gl_hh = .00005 // maximum leakage conductance
+    el_hh = -65.0 // reversal potential of the leakage channel
+}
+
+forall {
+    nseg += 3
+}
+
+objref electrode
+
+soma electrode = new IClamp(0.5)
+
+soma electrode.del = 100
+soma electrode.dur = 100
+soma electrode.amp = 0.5
