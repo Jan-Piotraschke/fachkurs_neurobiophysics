@@ -7,8 +7,8 @@ our main file
 can include .mod files
 
 ## .mod file
-add membrane mechanisms to NEURON
-
+add membrane mechanisms to NEURON  
+with that you can also represent 2p-microscope point excitation (called a **point process**)
 
 ### reminder
 ion channels werden als Dichte eingefügt
