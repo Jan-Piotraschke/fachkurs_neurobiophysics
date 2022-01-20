@@ -1,0 +1,68 @@
+// This script demonstrate how to create multiple stimulus and synapses in a for loop
+
+load_file("nrngui.hoc")
+
+// parameters 
+interval = 50
+weight = 0.0001 
+
+create soma, dend
+soma {
+    nseg = 1
+    L = 30
+    diam = 30
+    Ra = 100
+    insert hh
+}
+
+dend {
+    nseg = 11 // cylinder is divided into 11 segments
+    L = 1000 // um
+    diam = 2
+    Ra = 100
+    insert pas // leak channel
+    g_pas = 0.0001
+    e_pas = -65
+}
+
+// bottom of the dendrite connected with the top of the soma
+connect dend(0), soma(1)
+
+// list can contains objects
+objref syn_list, stim_list, con_list
+syn_list = new List()
+stim_list = new List()
+con_list = new List()
+
+count = 0
+dend {
+    // == "for each section" -> Eigenart von NEURON, dass "x" der "section" so entspricht
+    for(x, 0) {
+        syn_list.append(new MySynapse(x))
+        stim_list.append(new NetStim())
+        // return object on index ... and change the value
+        stim_list.o(count).start = 100 + count * interval
+        stim_list.o(count).number = 1
+        con_list.append(new NetCon(stim_list.o(count), syn_list.o(count), 0, 0, weight))
+
+        count += 1
+    }
+}
+
+tstop = 800
+
+objref data_v, data_time
+data_time = new Vector()
+data_time.record(&t)
+
+data_v = new Vector()
+data_v.record(&soma.v(0.5))
+
+run()
+
+// plot the data
+objref voltage_plot
+voltage_plot = new Graph()
+
+voltage_plot.size(0, data_time.max(), data_v.min(), data_v.max())
+data_v.line(voltage_plot, data_time, 1, 2)
