@@ -1,0 +1,14 @@
+// save the data
+objref data, data_time, file
+data = new Vector()
+data_time = new Vector()
+file = new File()
+
+// record the data 
+data_time.record(&t)
+// data.record(&sova.v)
+
+// open the file
+file.wopen("soma_timeseries.csv")
+data_time.printf(file)
+file.close()
