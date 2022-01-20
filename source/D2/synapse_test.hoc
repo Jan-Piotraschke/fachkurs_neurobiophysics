@@ -9,8 +9,32 @@ soma {
 objref syn, stim, nc
 // call the 'function' definded inside the .mod file
 soma syn = new MySynapse(0.5)
-syn.e = 5
+syn.e = 0
 
 // stimulus
 stim = new NetStim()
-stim.start = 
+stim.start = 100 // ms
+stim.interval = 20
+stim.number = 5
+stim.noise = 1 // between 0 and 1
+
+// target "syn" with "stim"
+nc = new NetCon(stim, syn, 0, 0, 0.01)
+
+tstop = 300
+
+objref data_v, data_time
+data_time = new Vector()
+data_time.record(&t)
+
+data_v = new Vector()
+data_v.record(&soma.v(0.5))
+
+run()
+
+// plot the data
+objref voltage_plot
+voltage_plot = new Graph()
+
+voltage_plot.size(0, data_time.max(), data_v.min(), data_v.max())
+data_v.line(voltage_plot, data_time, 1, 2)
