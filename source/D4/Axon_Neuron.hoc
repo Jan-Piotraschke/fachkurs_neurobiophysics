@@ -1,0 +1,24 @@
+// Once you have completed your new neuron, generate a space plot as you did in the previous exercise.
+
+
+load_file("Morphology_L5PC.hoc")
+
+create axon
+axon {
+    nseg = 20
+    diam = 5
+    L = 2000
+    Ra = 100
+    cm = 0.01 // Cm sinkt bei Myelination
+    insert pas
+	g_pas = 0.0001 // Rm steigt bei Myelination, also sinkt g_pas
+	insert extr
+	insert hh // nodes of Ranvier
+}
+
+
+// attach your myelinated axon with Nodes of Ranvier to the neuron in Morphology_L5PC.hoc      
+connect axon(1), soma(1)
+
+tstop = 50
+

@@ -1,0 +1,95 @@
+/* For this exercise we will model some of the mechanisms that the nervous system uses to alter conduction velocity. 
+Specifically we will look at myelination and Nodes of Ranvier. 
+
+1.	Myelination increases the insulation of an axon. Think about which biophysical parameters this will change and 
+	adapt your neuron from Conduction Velocity 1 to model myelination. Your axon should now have a total length of 
+	2000 um.
+2.	Nodes of Ranvier are discrete points along an axon that have a high concentration of sodium and potassium 
+	channels. These nodes regenerate and accelerate the action potential as it moves along the axon. Adapt your 
+	model from exercise 1 to introduce nodes of Ranvier.
+3.	In a separate file, attach your myelinated axon with Nodes of Ranvier to the neuron in Morphology_L5PC.hoc      
+
+Once you have completed your new neuron, generate a space plot as you did in the previous exercise. */
+
+
+load_file("nrngui.hoc")
+
+
+// 1. design the neuron
+
+create soma, axon
+
+soma {
+    nseg = 1
+    diam = 18.8
+    L = 18.8
+    Ra = 100.0
+    // insert Hodgkin-Huxley channels: sodium, potassium, and leakage channels
+    insert hh
+    gnabar_hh = 0.25
+    // passive properties of the hh channels
+    gl_hh = .00005
+    el_hh = -65.0
+    // insert passive channels
+    insert pas
+	insert extr
+}
+
+axon {
+    nseg = 20
+    diam = 5
+    L = 2000
+    Ra = 100
+    cm = 0.01 // Cm sinkt bei Myelination
+    insert pas
+	g_pas = 0.0001 // Rm steigt bei Myelination
+	insert extr
+	insert hh // nodes of Ranvier
+}
+
+
+connect axon(0), soma(0)
+
+// 2. let's stimulate this neuron -> insert an excitatory synapse
+
+objref syn, stim, nc
+soma syn = new MySynapse(0.5)
+syn.e = 0
+
+
+stim = new NetStim()
+stim.start = 20 // ms
+stim.interval = 20
+stim.number = 5
+stim.noise = 0 // between 0 and 1
+
+// target "syn" with "stim"
+nc = new NetCon(stim, syn, 0, 0, 0.01)
+
+tstop = 50
+
+objref data_v_soma, data_v_axon, data_time
+data_v_soma = new Vector()
+data_v_axon = new Vector()
+data_time = new Vector()
+
+data_time.record(&t)
+// Run the simulation and generate a graph showing the membrane potential at the soma, and in the middle of the axon.
+data_v_axon.record(&axon.v(0.5))
+data_v_soma.record(&soma.v(0.0))
+
+run()
+
+// define the plot
+objref voltage_plot
+voltage_plot = new Graph()
+
+voltage_plot.size(0, data_time.max(), data_v_axon.min(), data_v_axon.max())
+
+// plot the data
+data_v_axon.line(voltage_plot, data_time, 1, 2)
+data_v_soma.line(voltage_plot, data_time, 2, 2)
+voltage_plot.label("Axon - Voltage")
+voltage_plot.label("Soma - Voltage (in red)")
+
+voltage_plot.exec_menu("View = plot") // to autoscale the graph

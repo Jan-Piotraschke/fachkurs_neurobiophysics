@@ -1,0 +1,109 @@
+/* Conduction Velocity 1
+
+For this exercise we will look at the parameters that dictate the conduction of charge along an axon.
+To begin with you will have to construct a simple neuron that contains:
+-	Soma containing the HH and Pas conductances with the same parameters as the models you built for the tutorial 
+-	Axon containing just the Pas conductance, with Ra = 100, Cm = 1, L = 500, diam = 5 and nseg = 20
+
+To stimulate this neuron we will insert an excitatory synapse in the soma. To do this you can either use the synapse 
+you created with Christian, or you can use the NEURON AlphaSynapse mechanism (you can find the reference for this 
+mechanism here: https://www.neuron.yale.edu/neuron/static/docs/help/neuron/neuron/mech.html).
+
+Start with the following values for the EPSP: onset = 20ms, tau = 0.1, gmax = 0.05 us/cm2, e = 0 mV.
+Run the simulation and generate a graph showing the membrane potential at the soma, and in the middle of the axon.
+Now adjust the parameters of the EPSP until you can fire an action potential at the soma. You will notice that 
+the size of the response in the middle of the axon is much smaller than in the soma. 
+
+To quantify the peak of these responses we will use another mechanism called ‘extrema’. To do this insert ‘extr’ 
+everywhere in your neuron. This will calculate the peak response at every point in your neuron. To demonstrate 
+this, run your simulation for 50ms and then enter in the command line ‘oc>soma.vmax_extr(0.5)’ and press enter. 
+This will give you the peak value of the membrane potential at the soma. You can repeat this at the axon to see 
+how the peak changes. 
+
+To view the decay along the length of the neuron generate a space plot. To do this click on Graph>Shape plot. 
+In the figure for the Shape plot click on the square in the corner and then select‘Space plot’. Now drag the line 
+across the length of the cell. This will produce an aditional graph. Right click on that graph and choose 
+'Plot what?' and then type "vmax_extr". Now if you run the simulation you will see on this graph a plot of the 
+peak membrane potential along the length of the cell. */
+
+
+load_file("nrngui.hoc")
+
+
+// 1. design the neuron
+
+create soma, axon
+
+soma {
+    nseg = 1
+    diam = 18.8
+    L = 18.8
+    Ra = 100.0
+    // insert Hodgkin-Huxley channels: sodium, potassium, and leakage channels
+    insert hh
+    gnabar_hh = 0.25
+    // passive properties of the hh channels
+    gl_hh = .00005
+    el_hh = -65.0
+    // insert passive channels
+    insert pas
+}
+
+axon {
+    nseg = 20
+    diam = 5
+    L = 500
+    Ra = 100
+    cm = 1
+    insert pas
+}
+
+forall {
+    insert extr
+}
+
+connect axon(0), soma(0)
+
+// 2. let's stimulate this neuron -> insert an excitatory synapse
+
+objref syn, stim, nc
+soma syn = new MySynapse(0.5)
+syn.e = 0
+
+
+stim = new NetStim()
+stim.start = 20 // ms
+stim.interval = 20
+stim.number = 5
+stim.noise = 0 // between 0 and 1
+
+// target "syn" with "stim"
+nc = new NetCon(stim, syn, 0, 0, 0.01)
+
+tstop = 50
+
+objref data_v_soma, data_v_axon, data_time
+data_v_soma = new Vector()
+data_v_axon = new Vector()
+data_time = new Vector()
+
+data_time.record(&t)
+// Run the simulation and generate a graph showing the membrane potential at the soma, and in the middle of the axon.
+data_v_axon.record(&axon.v(0.5))
+data_v_soma.record(&soma.v(0.0))
+
+run()
+
+// define the plot
+objref voltage_plot
+voltage_plot = new Graph()
+
+voltage_plot.size(0, data_time.max(), data_v_axon.min(), data_v_axon.max())
+
+// plot the data
+data_v_axon.line(voltage_plot, data_time, 1, 2)
+data_v_soma.line(voltage_plot, data_time, 2, 2)
+voltage_plot.label("Axon - Voltage")
+voltage_plot.label("Soma - Voltage (in red)")
+
+voltage_plot.exec_menu("View = plot") // to autoscale the graph

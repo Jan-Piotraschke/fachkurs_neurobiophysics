@@ -1,0 +1,85 @@
+load_file("Axon_Neuron.hoc")
+
+maxsyn = 2
+
+// create a post synaptic neuron
+create target_cell
+target_cell {
+     L  = 30
+     diam = 30
+     insert pas
+}
+
+// make the target_cell visible
+target_cell {
+     define_shape()
+     for i=0, n3d() - 1 {
+          pt3dchange(i, x3d(i) + 100, y3d(i), z3d(i), diam3d(i))
+     }
+}
+
+objref electrode
+soma { 
+       electrode = new IClamp(0.5) 
+       electrode.del = 10 
+       electrode.dur = 10
+       electrode.amp = 0.5
+}  
+
+objref con_list
+con_list = new List() 
+
+objref syn[maxsyn]
+target_cell syn[0] = new MySynapse(0.5) 
+apic[11] syn[1] = new MySynapse(0.5) 
+
+
+// Terminal is considered here as the name of the part of the axon which is the furthest from the soma of L5PC the axon terminal.
+terminal con_list.append(new NetCon(&v(1), syn[0], 3, 2, 0.01)) 
+terminal con_list.append(new NetCon(&v(1), syn[1], 3, 2, 0.01)) 
+
+
+
+// stim = new NetStim()
+// stim.start = 20 // ms
+// stim.interval = 20
+// stim.number = 5
+// stim.noise = 0 // between 0 and 1
+
+// // target "syn" with "stim"
+// nc = new NetCon(stim, syn, 0, 0, 0.01)
+
+tstop = 50
+
+objref data_v_soma, data_v_terminal, data_v_target, data_v_apic11, data_time
+data_v_soma = new Vector()
+data_v_terminal = new Vector()
+data_v_target = new Vector()
+data_v_apic11 = new Vector()
+
+data_time = new Vector()
+
+data_time.record(&t)
+
+data_v_soma.record(&soma.v(0.5))
+// data_v_terminal.record(&axon(0).v(0.5))
+data_v_target.record(&target_cell.v(0.5))
+data_v_apic11.record(&apic[11].v(0.5))
+
+run()
+
+// define the plot
+objref voltage_plot
+voltage_plot = new Graph()
+
+voltage_plot.size(0, data_time.max(), data_v_soma.min(), data_v_soma.max())
+
+// plot the data
+data_v_soma.line(voltage_plot, data_time, 1, 2)
+// data_v_terminal.line(voltage_plot, data_time, 2, 2)
+data_v_target.line(voltage_plot, data_time, 3, 2)
+data_v_apic11.line(voltage_plot, data_time, 4, 2)
+
+voltage_plot.label("Soma - Voltage")
+
+voltage_plot.exec_menu("View = plot") // to autoscale the graph
