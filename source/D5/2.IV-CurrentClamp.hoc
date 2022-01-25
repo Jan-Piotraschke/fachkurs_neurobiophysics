@@ -1,0 +1,166 @@
+load_file("nrngui.hoc")
+	create soma
+	access soma
+	
+
+
+objref vc,g,g1,g2,yline,xline
+
+objref vic,vvec,icv[200],syng[200],syn,ic
+STEPS_NUM = 0
+vmax = 70
+vmin = -80
+rin = 0
+dx = 0.1
+
+proc advance(){
+	fadvance()
+	cur =v(0.5)
+	gsyn = syn.g
+}
+
+proc set_iclamp(){
+	ic = new IClamp(0.5)
+	ic.dur = 400
+	ic.del = 30
+	tstop = 550
+}
+
+proc set_graphs(){
+	newPlotV()
+	g = graphItem
+	newPlotS()
+	g1 = graphItem
+	newPlotS()
+	g2 = graphItem
+
+	g.addexpr("","cur",1,1)
+	g.family(1)
+	
+	
+	g2.addexpr("","ic.i",2,1)
+	g2.family(1)
+	
+	
+	g.size(0,tstop,-110,50)
+	g1.size(-0.3,1,-110,50)
+	yline = new Vector(2)
+	xline = new Vector(2)
+	yline.plot(g,xline,2,1)
+
+	g.menu_tool("mouse events", "move_line")
+	g2.menu_tool("mouse events", "move_line")
+
+	g2.size(0,tstop,-0.5,1.1)
+	g2.family(1)
+			
+
+}
+
+
+proc run_steps(){local k,i
+	g.erase()
+	//g1.erase()
+	g2.erase()
+	k = -1
+	v_init = e_pas(0.5)
+	vvec = new Vector()
+	
+	for (i=-0.3;i<1;i+=dx){
+		if(k>-1) {
+			icv[k].play_remove()
+			syng[k].play_remove()
+		}
+		icv[k+=1] = new Vector()
+		syng[k] = new Vector()
+		icv[k].record(&cur,0.025)
+		syng[k].record(&gsyn,0.025)
+		ic.amp = i
+		run()
+		vvec.append(i)
+	}
+	STEPS_NUM = k
+	vic = new Vector(STEPS_NUM)
+	vic.plot(g1,vvec)
+}
+
+
+objref V_,I_
+proc plot_ic(){local i,ind 
+	ind = $1
+	
+	for i=0,STEPS_NUM-1 vic.x[i] = icv[i].x[ind]
+	rin =  vic.c.deriv(dx).mean()
+	
+	
+
+    //V_ = new Vector(1)
+    //V_.append(syn.e)
+   // I_ = vvec.c.interpolate(V_, vic)
+    
+   //	g1.mark(I_.x[0],syn.e,"O",20,2,1)
+	g1.flush()
+	
+}
+
+prevx = 0
+proc move_line(){local i,x
+	x = $2
+	if($1 == 1 && x < tstop && x > 0){
+		g.mark(prevx,-120,"|",20,0,1)
+		g.mark(x,-120,"|",20,2,1)		
+		g.flush()
+
+		g2.mark(prevx,-0.5,"|",20,0,1)
+		g2.mark(x,-0.5,"|",20,2,1)		
+		g2.flush()
+		prevx = x
+		i = int($2/dt)
+		plot_ic(i)
+	}
+}
+
+objref ns,nc
+proc _init(){
+	diam = 100
+	L = 100
+	insert pas
+	g_pas = 1/30000
+	v_init = e_pas
+	syn = new ExpSyn(0.5)
+	syn.tau = 5
+	syn.e = 0
+	ns = new NetStim(0.5)
+    ns.number = 1
+    ns.start = 100
+    ns.interval = 0
+    ns.noise = 0
+    nc =  new NetCon(ns, syn)
+    nc.weight = 0//5e-3	
+	set_iclamp()
+	set_graphs()
+}
+
+
+proc snapshot(){
+	vic.line(g1,vvec,2,2)
+}
+
+objref vbox
+vbox = new VBox()
+vbox.intercept(1)	//all following creations go into the "vbox" box
+	xpanel("")
+	_init()
+	xbutton("run","run_steps()")
+	xbutton("snapshot","snapshot()")
+	xpvalue("cm(0.5)")
+	xpvalue("g_pas(0.5)") 
+	xpvalue("e_pas(0.5)")
+	//xpvalue("syn.e") 
+	//xpvalue("nc.weight")
+	xpvalue("rin")
+	xpanel()
+vbox.intercept(0)	//ends intercept mode
+vbox.map()
+
+

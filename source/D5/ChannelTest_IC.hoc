@@ -1,0 +1,51 @@
+/* ChannelTest_IC
+
+For this exercise you will investigate how mutant sodium channels can alter neuronal excitability. This exercise
+has two parts.
+
+Part 1: Create mutant neurons
+
+Create three separate hoc files, one for your control cell, and two for your mutants. In each hoc file you will 
+load your pyramidal cell that you have been working with, and in the first one you will insert the hh conductance 
+in every compartment as you have previously. This will be your control cell.
+
+In the utils folder you will find two mod files titled 'hh_L324Q.mod' and 'hh_R98T.mod', these are your mutant 
+conductances. Copy them to the folder you are working in and then make sure to compile these mod files using the
+mknrndll program. In your other two hoc files you will insert one of these mutant channel models instead of the hh.
+Set the parameters so that gnabar = 0.25, gkbar = 0.05 and gl = 0.00005.
+  
+Run your simulation for 300 ms. Insert a current clump point process as you have previously, with a delay of 100 ms, 
+a duration of 100 ms, and an amplitude of 0.5uA.
+
+Now test these models to make sure that they fire, plot the voltage traces and compare the effects of each 
+mutation. 
+
+Part 2: Generate an I-F curve 
+
+You will now generate an input frequency curve. To do this you will use a for loop that will repeat your 
+simulation but with each repetition it will increase the size of the current injection. Apply current steps from 
+0 to 5 uA in 0.5 uA increments. 
+
+After every current injection you will count the number of spikes generated and save this to a vector called 
+NumSpikes. To do this you will implement this piece of code inside your for loop:
+	
+	objref apc, NumSpikes[11]			// Introduce two variables
+	NumSpikes = new Vector(11,1)		// Specify the size of NumSpikes
+	soma apc = new APCount(0.5)		 	// APCount is a tool that will detect when a spikes occurs in the   		
+	apc.record(vec)						// compartment you specify. When you use the record command you 
+	run ()								// write the time of each spike to the list 'vec'.
+	NumSpikes.x[j]=vec.size()			// This line counts the number of spikes in 'vec' and writes that number
+										// to the list NumSpikes.
+										
+The next step is to close the for loop and plot the I-F curve. To do this we will plot the number of spikes 
+against the current injection using the following code:
+	
+	objref g							// Create an object called 'g'
+	g = new Graph()						// Tell NEURON that 'g' is a graph
+	g.size(0, 5, 0, 10)					// The graph 'g' will have x-axis from 0 to 5 uA and y-axis from 
+	NumSpikes.plot(g, .5)				// 0 to 10 spikes. Here we tell NEURON to plot NumSpikes in g at 0.5uA 
+										// intervals
+	
+	
+*/
+	
