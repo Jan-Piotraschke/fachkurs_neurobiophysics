@@ -30,6 +30,11 @@ soma {
 
 // implement 200 MySynapse 
 objref random, stim, in_syn, ex_syn, synpase, nc
+stim = new NetStim()
+stim.start = 100
+stim.interval = 20
+stim.number = 1
+stim.noise = 0
 
 // inhibitoric synpase
 in_syn = new MySynapse(0.5)
@@ -37,38 +42,47 @@ in_syn.e = -80
 // exhibitoric synapse
 ex_syn = new MySynapse(0.5)
 ex_syn.e = 0
-
 random = new Random()
+
+
+obfunc choose_syn() {
+
+    // decide whether the synpase is exhibitorisch or inhibitorisch
+    if (random.uniform(0, 1) <= exc_ratio) {
+        // erschaffe MySynapse exhibitorisch
+        return ex_syn
+    } else { 
+        // inhibitorische Synpase 
+        return in_syn
+    }
+}
+
+
 // while true meint, dass es unendlich lang itteriert, bis alle 200 Synpasen verteilt sind
 count = 1
 while (1) {
-  // access the dendrite
-  for (i = 0; i<=dend_number-1; i=i+1) dend[i]{
-      // iterate over the segments
-      for(x, 0) {
-      // choose whether this segment gets a new synpase connection
-      if (random.uniform(0, 1) <= 0.1) {
-           // decide whether the synpase is exhibitorisch or inhibitorisch
-          if (random.uniform(0, 1) <= exc_ratio) {
-            // erschaffe MySynapse exhibitorisch
-            synapse = ex_syn
-          } else{ 
-            // inhibitorische Synpase 
-             synpase = in_syn
-          }
-          stim = new NetStim()
-          stim.start = 100
-          stim.interval = 20
-          stim.number = 1
-          stim.noise = 0
-          nc = new NetCon(stim, synapse, 0, 0, weight)
-          count += 1
-          if (count == synapse_count) {
-            break;
-          }
-       }
+    // access the dendrite
+    for (i = 0; i<=dend_number-1; i=i+1) dend[i]{
+        // iterate over the segments
+        for(x, 0) {
+
+            // choose whether this segment gets a new synpase connection
+            if (random.uniform(0, 1) <= 0.1) {
+                synpase = choose_syn()
+                nc = new NetCon(stim, synpase, 0, 0, weight)
+                count += 1
+                if (count == synapse_count) {
+                    break
+                }
+            }
+        }
+        if (count == synapse_count) {
+            break
+        }
     }
-  }
+    if (count == synapse_count) {
+        break
+    }
 }
 
 tstop = 200
