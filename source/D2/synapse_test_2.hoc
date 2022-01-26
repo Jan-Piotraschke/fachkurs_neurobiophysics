@@ -36,7 +36,7 @@ con_list = new List()
 
 count = 0
 dend {
-    // == "for each section" -> Eigenart von NEURON, dass "x" der "section" so entspricht
+    // == "for each segment" -> Eigenart von NEURON, dass "x" der "segment" so entspricht
     for(x, 0) {
         syn_list.append(new MySynapse(x))
         stim_list.append(new NetStim())

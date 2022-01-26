@@ -49,3 +49,43 @@ against the current injection using the following code:
 	
 */
 	
+load_file("nrngui.hoc")
+load_file("Morphology_L5PC.hoc")
+load_file("Test_IC.ses")
+
+forall {
+	insert hh
+    gnabar_hh = 0.25
+	gkbar_hh = 0.05
+    gl_hh = .00005
+    el_hh = -65.0
+}
+
+objref electrode
+soma { 
+       electrode = new IClamp(0.5) 
+       electrode.del = 100 
+       electrode.dur = 100
+       electrode.amp = 0.45
+}
+
+tstop = 300
+
+objref apc, vec, NumSpikes[11]		// Introduce two variables
+vec = new Vector()
+NumSpikes = new Vector(11,1)		// Specify the size of NumSpikes
+
+for j=0,10 {
+	soma electrode.amp = j*0.5
+	soma apc = new APCount(0.5)
+	apc.record(vec)						// compartment you specify. When you use the record command you 
+	run()	
+	NumSpikes.x[j]=vec.size()
+
+}
+
+
+objref g							// Create an object called 'g'
+g = new Graph()						// Tell NEURON that 'g' is a graph
+g.size(0, 5, 0, 10)					// The graph 'g' will have x-axis from 0 to 5 uA and y-axis from 
+NumSpikes.plot(g, .5)
