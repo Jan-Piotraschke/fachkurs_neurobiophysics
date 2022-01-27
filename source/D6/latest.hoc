@@ -1,0 +1,105 @@
+
+load_file("nrngui.hoc")
+load_file("Morphology_L5PC.hoc")
+
+
+synapse_count = 200 // amount of synapses to be added to model
+exc_ratio = 0.8 // average fraction of excitatory synapses
+e_revin = -80 // inhibitory synapse reversal potential
+e_revexc = 0   // excitatory synapse reversal potential
+noise = 1      // every synapses fires randomly
+weight = 0.001 // weight of synapse
+
+forall { // set axial resistance
+    Ra = 100 
+}
+
+soma { //insert only passive mechanisms to the dendrite and soma.
+    insert pas 
+    g_pas =  0.00005 // R = 60 MOhm
+}
+seg_count = 0
+forsec dendritic {
+    insert pas
+    g_pas = 0.00005 // R =  60 MOhm  S/cm2
+    nseg = 4 // number of segments
+    seg_count += nseg
+}
+
+objectvar electrode
+soma electrode = new IClamp(0.5)
+soma electrode.del = 200
+soma electrode.dur = 400
+soma electrode.amp = 0.45     
+
+// create random object, set to uniform distrbution
+objref r
+r = new Random()
+r.uniform(0,1)
+
+// distribute 200 mysynapse randomly across segments 
+synprob = synapse_count/seg_count // probability for synapse in a segment
+
+objref stim, netcon, synapse, listSyn, listStim, listCon 
+listSyn = new List()
+listStim = new List()
+listCon = new List() 
+
+
+proc create_cell() {local baseline 
+    baseline = $1
+	forsec dendritic {
+		for(x) {
+			// create stimulus, synapse and connect 
+			if (r.repick() < synprob) {
+				stim = new NetStim()
+				stim.start = 40
+				stim.interval = 10
+				stim.number = 1000
+				stim.noise = noise // make noise a parameter. How can synaptic activity be implemented?
+				listStim.append(stim) // append stimulus to list
+				synapse = new MySynapse(0.5) // create inhibitory synapse and append
+				synapse.e = e_revin 
+				synapse.tau_B = 2
+				// change to excitatory synapse randomly
+				if (r.repick() < baseline) {
+					synapse.e = e_revexc
+				}
+				listSyn.append(synapse) 
+				netcon = new NetCon(stim, synapse, 0, 0, weight) // create connection and append
+				listCon.append(netcon) 
+			}
+		}
+	}
+}
+
+objref data_v, data_time
+
+objref data_matrix
+data_matrix = new Matrix()
+data_matrix.resize(23961,10)
+
+data_v = new Vector()
+data_time = new Vector()
+
+// meassurement of steady state
+tstop= electrode.del + electrode.dur - 1
+for j=1,9 {
+    create_cell(j/10)
+    data_v.record(&soma.v(0.5))
+    data_time.record(&t)
+    run()
+    i_amp = electrode.amp
+    v_amp = soma.v(0.5) - e_pas
+    R_in = v_amp/i_amp
+    print "R_in = ", R_in, " g_pas:", g_pas
+    data_matrix.setcol(0, data_time)
+    data_matrix.setcol(j, data_v)
+}
+
+// save to file
+objref file
+file = new File()
+file.wopen("data.csv")
+data_matrix.fprint(file, " %g")
+file.close()
