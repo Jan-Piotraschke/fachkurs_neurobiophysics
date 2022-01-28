@@ -41,12 +41,13 @@ r.uniform(0,1)
 synprob = synapse_count/seg_count // probability for synapse in a segment
 
 objref stim, netcon, synapse, listSyn, listStim, listCon 
-listSyn = new List()
-listStim = new List()
-listCon = new List() 
 
 
+count = 0
 proc create_cell() {local baseline 
+    listSyn = new List()
+	listStim = new List()
+	listCon = new List() 
     baseline = $1
 	forsec dendritic {
 		for(x) {
@@ -66,6 +67,7 @@ proc create_cell() {local baseline
 					synapse.e = e_revexc
 				}
 				listSyn.append(synapse) 
+				count += 1
 				netcon = new NetCon(stim, synapse, 0, 0, weight) // create connection and append
 				listCon.append(netcon) 
 			}
@@ -92,7 +94,7 @@ for j=1,9 {
     i_amp = electrode.amp
     v_amp = soma.v(0.5) - e_pas
     R_in = v_amp/i_amp
-    print "R_in = ", R_in, " g_pas:", g_pas
+    print "R_in = ", R_in
     data_matrix.setcol(0, data_time)
     data_matrix.setcol(j, data_v)
 }
